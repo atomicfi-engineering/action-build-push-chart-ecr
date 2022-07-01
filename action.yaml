@@ -1,21 +1,62 @@
-name: 'Hello World' # taken from https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
-description: 'Greet someone'
+name: Build and Push Chart to ECR
+description: Builds and pushes a chart to ECR
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  chart-path:
+    description: Path to the chart to build and push
     required: true
-    default: 'World'
-outputs:
-  random-number:
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-id }}
+  ecr-repository:
+    description: Name of ECR repository to push the chart to
+    required: false
+    default: charts
+  aws-access-key-id:
+    description: AWS secret key ID. Required.
+    required: true
+  aws-secret-access-key:
+    description: AWS secret access key. Required.
+    required: true
+  aws-region:
+    description: AWS region. Required.
+    required: true
+  role-to-assume:
+    description: AWS IAM role to assume.
+    required: false
+  role-external-id:
+    description: AWS IAM role external id
+    required: false
+  role-duration-seconds:
+    description: AWS IAM role assumption duration seconds
+    required: false
+    default: 900
+  role-session-name:
+    description: AWS IAM role assumption session name
+    required: false
+    default: action-build-push-chart-ecr
 runs:
   using: "composite"
   steps:
-    - run: echo Hello ${{ inputs.who-to-greet }}.
-      shell: bash
-    - id: random-number-generator
-      run: echo "::set-output name=random-id::$(echo $RANDOM)"
-      shell: bash
-    - run: ${{ github.action_path }}/goodbye.sh
-      shell: bash
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.role-to-assume }}
+        role-external-id: ${{ inputs.role-external-id }}
+        role-duration-seconds: ${{ inputs.role-duration-seconds }}
+        role-session-name: ${{ inputs.role-session-name }}
+    - name: Get ECR Regsitry
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Get ECR Pass
+      id: get-ecr-pass
+      run: echo "::set-output name=ecr-pass::$(aws ecr get-login-password)"
+    - name: Build and Push to ECR
+      uses: atomicfi/action-build-push-chart-oci-registry
+      with:
+        chart-path: ${{ inputs.chart-path }}
+        registry-url: ${{ steps.login-ecr.outputs.registry }}
+        repository: ${{ inputs.ecr-repository }}
+        username: AWS
+        password: ${{ steps.get-ecr-pass.outputs.ecr-pass }}
