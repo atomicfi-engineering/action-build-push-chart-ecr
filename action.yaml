@@ -49,6 +49,7 @@ runs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Get ECR Pass
       id: get-ecr-pass
+      shell: bash
       run: echo "::set-output name=ecr-pass::$(aws ecr get-login-password)"
     - name: Build and Push to ECR
       uses: atomicfi/action-build-push-chart-oci-registry@v1.0.0
