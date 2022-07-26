@@ -52,7 +52,7 @@ runs:
       shell: bash
       run: echo "::set-output name=ecr-pass::$(aws ecr get-login-password)"
     - name: Build and Push to ECR
-      uses: atomicfi/action-build-push-chart-oci-registry@v1.1.0
+      uses: atomicfi/action-build-push-chart-oci-registry@v1
       with:
         chart-path: ${{ inputs.chart-path }}
         registry-url: ${{ steps.login-ecr.outputs.registry }}
