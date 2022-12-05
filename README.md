@@ -13,7 +13,7 @@ Builds and pushes a chart to an ECR repository
 <!-- start usage -->
 
 ```yaml
-- uses: atomicfi/action-composite-action-template@undefined
+- uses: atomicfi-engineering/action-composite-action-template@undefined
   with:
     # Path to the chart to build and push. Required.
     # Default:
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Push Helm Chart to ECR
     steps:
-      - uses: atomicfi/action-build-push-ecr@v1.0.0
+      - uses: atomicfi-engineering/action-build-push-ecr@v1.0.0
         with:
           chart-path: charts/chart-name
           ecr-repository: charts
