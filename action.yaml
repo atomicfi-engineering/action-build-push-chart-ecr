@@ -1,3 +1,4 @@
+# action.yaml
 name: Build and Push Chart to ECR
 description: Builds and pushes a chart to ECR
 inputs:
